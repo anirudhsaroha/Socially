@@ -1,11 +1,20 @@
 "use client";
 
-import { getProfileByUsername, getUserPosts, updateProfile } from "@/actions/profile.action";
+import { useState, useEffect } from "react";
+import {
+  getProfileByUsername,
+  getUserPosts,
+  updateProfile,
+  getFollowers,
+  getFollowing,
+  getUserLikedPosts,
+} from "@/actions/profile.action";
 import { toggleFollow } from "@/actions/user.action";
 import PostCard from "@/components/PostCard";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 import {
   Dialog,
   DialogClose,
@@ -28,8 +37,8 @@ import {
   LinkIcon,
   MapPinIcon,
 } from "lucide-react";
-import { useState } from "react";
 import toast from "react-hot-toast";
+import { ProfileSkeleton } from "@/components/ProfileSkeleton";
 
 type User = Awaited<ReturnType<typeof getProfileByUsername>>;
 type Posts = Awaited<ReturnType<typeof getUserPosts>>;
@@ -49,6 +58,8 @@ function ProfilePageClient({
 }: ProfilePageClientProps) {
   const { user: currentUser } = useUser();
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isUpdatingFollow, setIsUpdatingFollow] = useState(false);
 
@@ -58,6 +69,50 @@ function ProfilePageClient({
     location: user.location || "",
     website: user.website || "",
   });
+
+  // Update type definitions to allow `name` to be string | null.
+  const [followingData, setFollowingData] = useState<
+    Array<{ following: { id: string; name: string | null; username: string; image: string | null } }>
+  >([]);
+  const [followersData, setFollowersData] = useState<
+    Array<{ follower: { id: string; name: string | null; username: string; image: string | null } }>
+  >([]);
+  const [loadingFollowing, setLoadingFollowing] = useState(false);
+  const [loadingFollowers, setLoadingFollowers] = useState(false);
+
+  // Fetch following list when the dialog is opened
+  useEffect(() => {
+    if (showFollowing) {
+      (async () => {
+        setLoadingFollowing(true);
+        try {
+          const data = await getFollowing(user.id);
+          setFollowingData(data);
+        } catch (error) {
+          console.error("Error fetching following:", error);
+        } finally {
+          setLoadingFollowing(false);
+        }
+      })();
+    }
+  }, [showFollowing, user.id]);
+
+  // Fetch followers list when the dialog is opened
+  useEffect(() => {
+    if (showFollowers) {
+      (async () => {
+        setLoadingFollowers(true);
+        try {
+          const data = await getFollowers(user.id);
+          setFollowersData(data);
+        } catch (error) {
+          console.error("Error fetching followers:", error);
+        } finally {
+          setLoadingFollowers(false);
+        }
+      })();
+    }
+  }, [showFollowers, user.id]);
 
   const handleEditSubmit = async () => {
     const formData = new FormData();
@@ -102,25 +157,43 @@ function ProfilePageClient({
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={user.image ?? "/avatar.png"} />
                 </Avatar>
-                <h1 className="mt-4 text-2xl font-bold">{user.name ?? user.username}</h1>
+                <h1 className="mt-4 text-2xl font-bold">
+                  {user.name ?? user.username}
+                </h1>
                 <p className="text-muted-foreground">@{user.username}</p>
                 <p className="mt-2 text-sm">{user.bio}</p>
 
                 {/* PROFILE STATS */}
                 <div className="w-full mt-6">
                   <div className="flex justify-between mb-4">
-                    <div>
-                      <div className="font-semibold">{user._count.following.toLocaleString()}</div>
-                      <div className="text-sm text-muted-foreground">Following</div>
+                    <div onClick={() => setShowFollowers(true)} className="hover:cursor-pointer" >
+                      <div className="font-semibold">
+                        {user._count.following.toLocaleString()}
+                      </div>
+                      <button
+                        onClick={() => setShowFollowing(true)}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Following
+                      </button>
+                    </div>
+                    <Separator orientation="vertical" />
+                    <div onClick={() => setShowFollowers(true)} className="hover:cursor-pointer" >
+                      <div className="font-semibold">
+                        {user._count.followers.toLocaleString()}
+                      </div>
+                      <button
+                        onClick={() => setShowFollowers(true)}
+                        className="text-sm text-muted-foreground"
+                      >
+                        Followers
+                      </button>
                     </div>
                     <Separator orientation="vertical" />
                     <div>
-                      <div className="font-semibold">{user._count.followers.toLocaleString()}</div>
-                      <div className="text-sm text-muted-foreground">Followers</div>
-                    </div>
-                    <Separator orientation="vertical" />
-                    <div>
-                      <div className="font-semibold">{user._count.posts.toLocaleString()}</div>
+                      <div className="font-semibold">
+                        {user._count.posts.toLocaleString()}
+                      </div>
                       <div className="text-sm text-muted-foreground">Posts</div>
                     </div>
                   </div>
@@ -132,7 +205,10 @@ function ProfilePageClient({
                     <Button className="w-full mt-4">Follow</Button>
                   </SignInButton>
                 ) : isOwnProfile ? (
-                  <Button className="w-full mt-4" onClick={() => setShowEditDialog(true)}>
+                  <Button
+                    className="w-full mt-4"
+                    onClick={() => setShowEditDialog(true)}
+                  >
                     <EditIcon className="size-4 mr-2" />
                     Edit Profile
                   </Button>
@@ -160,7 +236,9 @@ function ProfilePageClient({
                       <LinkIcon className="size-4 mr-2" />
                       <a
                         href={
-                          user.website.startsWith("http") ? user.website : `https://${user.website}`
+                          user.website.startsWith("http")
+                            ? user.website
+                            : `https://${user.website}`
                         }
                         className="hover:underline"
                         target="_blank"
@@ -184,16 +262,14 @@ function ProfilePageClient({
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
             <TabsTrigger
               value="posts"
-              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
-               data-[state=active]:bg-transparent px-6 font-semibold"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
             >
               <FileTextIcon className="size-4" />
               Posts
             </TabsTrigger>
             <TabsTrigger
               value="likes"
-              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
-               data-[state=active]:bg-transparent px-6 font-semibold"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
             >
               <HeartIcon className="size-4" />
               Likes
@@ -203,9 +279,13 @@ function ProfilePageClient({
           <TabsContent value="posts" className="mt-6">
             <div className="space-y-6">
               {posts.length > 0 ? (
-                posts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+                posts.map((post) => (
+                  <PostCard key={post.id} post={post} dbUserId={user.id} />
+                ))
               ) : (
-                <div className="text-center py-8 text-muted-foreground">No posts yet</div>
+                <div className="text-center py-8 text-muted-foreground">
+                  No posts yet
+                </div>
               )}
             </div>
           </TabsContent>
@@ -213,14 +293,19 @@ function ProfilePageClient({
           <TabsContent value="likes" className="mt-6">
             <div className="space-y-6">
               {likedPosts.length > 0 ? (
-                likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
+                likedPosts.map((post) => (
+                  <PostCard key={post.id} post={post} dbUserId={user.id} />
+                ))
               ) : (
-                <div className="text-center py-8 text-muted-foreground">No liked posts to show</div>
+                <div className="text-center py-8 text-muted-foreground">
+                  No liked posts to show
+                </div>
               )}
             </div>
           </TabsContent>
         </Tabs>
 
+        {/* Edit Profile Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
@@ -232,7 +317,9 @@ function ProfilePageClient({
                 <Input
                   name="name"
                   value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
                   placeholder="Your name"
                 />
               </div>
@@ -241,7 +328,9 @@ function ProfilePageClient({
                 <Textarea
                   name="bio"
                   value={editForm.bio}
-                  onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, bio: e.target.value })
+                  }
                   className="min-h-[100px]"
                   placeholder="Tell us about yourself"
                 />
@@ -251,7 +340,9 @@ function ProfilePageClient({
                 <Input
                   name="location"
                   value={editForm.location}
-                  onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, location: e.target.value })
+                  }
                   placeholder="Where are you based?"
                 />
               </div>
@@ -260,7 +351,9 @@ function ProfilePageClient({
                 <Input
                   name="website"
                   value={editForm.website}
-                  onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, website: e.target.value })
+                  }
                   placeholder="Your personal website"
                 />
               </div>
@@ -273,8 +366,97 @@ function ProfilePageClient({
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Following Dialog */}
+        <Dialog open={showFollowing} onOpenChange={setShowFollowing}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Following</DialogTitle>
+            </DialogHeader>
+            {loadingFollowing ? (
+              <ProfileSkeleton />
+            ) : followingData.length > 0 ? (
+              followingData.map((follow) => (
+                <Link
+                  key={follow.following.id}
+                  href={`/profile/${follow.following.username}`}
+                >
+                  <div className="flex items-center space-x-4 py-2 border-b cursor-pointer">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage
+                        src={follow.following.image ?? "/avatar.png"}
+                      />
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold">
+                        {follow.following.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        @{follow.following.username}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">
+                No following users found.
+              </div>
+            )}
+            <DialogClose asChild>
+              <Button className="mt-4 w-full" variant="outline">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogContent>
+        </Dialog>
+
+        {/* Followers Dialog */}
+        <Dialog open={showFollowers} onOpenChange={setShowFollowers}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Followers</DialogTitle>
+            </DialogHeader>
+            {loadingFollowers ? (
+              <ProfileSkeleton />
+            ) : followersData.length > 0 ? (
+              followersData.map((follow) => (
+                <Link
+                  key={follow.follower.id}
+                  href={`/profile/${follow.follower.username}`}
+                >
+                  <div className="flex items-center space-x-4 py-2 border-b cursor-pointer">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage
+                        src={follow.follower.image ?? "/avatar.png"}
+                      />
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold">
+                        {follow.follower.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        @{follow.follower.username}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">
+                No followers found.
+              </div>
+            )}
+            <DialogClose asChild>
+              <Button className="mt-4 w-full" variant="outline">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
 }
+
 export default ProfilePageClient;

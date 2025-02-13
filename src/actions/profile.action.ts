@@ -196,3 +196,50 @@ export async function isFollowing(userId: string) {
     }
 }
   
+export async function getFollowing(userId: string) {
+  try {
+    const following = await prisma.follows.findMany({
+      where: { followerId: userId },
+      include: {
+        following: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return following;
+  } catch (error) {
+    console.error("Error fetching following list:", error);
+    throw new Error("Failed to fetch following list");
+  }
+}
+
+export async function getFollowers(userId: string) {
+  try {
+    const followers = await prisma.follows.findMany({
+      where: { followingId: userId },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return followers;
+  } catch (error) {
+    console.error("Error fetching followers list:", error);
+    throw new Error("Failed to fetch followers list");
+  }
+}
