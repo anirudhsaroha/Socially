@@ -161,3 +161,36 @@ export async function toggleFollow(targetUserId: string) {
       return { success: false, error: "Error toggling follow" };
     }
 }
+
+export async function searchUser(search: string) {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+          {
+            username: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        image: true,
+      },
+    });
+    return users;
+  } catch (error) {
+    console.error("Error in searchUser:", error);
+    return [];
+  }
+}
