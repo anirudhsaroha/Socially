@@ -3,6 +3,8 @@ import DesktopNavbar from "./DesktopNavbar";
 import MobileNavbar from "./MobileNavbar";
 import { currentUser } from "@clerk/nextjs/server";
 import { syncUser } from "@/actions/user.action";
+import { Button } from "./ui/button";
+import { UserIcon } from "lucide-react";
 
 async function Navbar() {
   const user = await currentUser();
@@ -17,9 +19,28 @@ async function Navbar() {
               Socially
             </Link>
           </div>
-
-          <DesktopNavbar />
-          <MobileNavbar />
+          <div className="flex " >
+            <DesktopNavbar />
+            {
+              user ? (
+                <div className="md:hidden" >
+                <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
+                <Link
+                href={`/profile/${
+                  user?.username ?? user?.emailAddresses[0].emailAddress.split("@")[0]
+                }`}
+                >
+                      <UserIcon className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+              ) : (
+                <div></div>
+              )
+            }
+            <MobileNavbar />
+            
+          </div>
         </div>
       </div>
     </nav>

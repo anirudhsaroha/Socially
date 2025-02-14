@@ -52,12 +52,6 @@ function MobileNavbar() {
                 Home
               </Link>
             </Button>
-            <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
-              <Link href="/search">
-                <SearchIcon className="w-4 h-4" />
-                Search
-              </Link>
-            </Button>
 
             {isSignedIn ? (
               <>
@@ -65,12 +59,6 @@ function MobileNavbar() {
                   <Link href="/notifications">
                     <BellIcon className="w-4 h-4" />
                     Notifications
-                  </Link>
-                </Button>
-                <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
-                  <Link href="/profile">
-                    <UserIcon className="w-4 h-4" />
-                    Profile
                   </Link>
                 </Button>
                 <SignOutButton>
