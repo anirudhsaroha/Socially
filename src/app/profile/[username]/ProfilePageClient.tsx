@@ -307,7 +307,7 @@ function ProfilePageClient({
 
         {/* Edit Profile Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px]  max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Profile</DialogTitle>
             </DialogHeader>
@@ -369,7 +369,7 @@ function ProfilePageClient({
 
         {/* Following Dialog */}
         <Dialog open={showFollowing} onOpenChange={setShowFollowing}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px]  max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Following</DialogTitle>
             </DialogHeader>

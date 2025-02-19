@@ -98,6 +98,7 @@ export default function Sidebar() {
 
   return (
     <div className="sticky top-20">
+      
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center text-center">
@@ -167,87 +168,80 @@ export default function Sidebar() {
 
       {/* Followers Dialog */}
       <Dialog open={showFollowers} onOpenChange={setShowFollowers}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Followers</DialogTitle>
-          </DialogHeader>
-          {loadingFollowers ? (
-            <ProfileSkeleton />
-          ) : followersData.length > 0 ? (
-            followersData.map((follow) => (
-              <div
-                key={follow.follower.id}
-                className="flex items-center space-x-4 py-2 border-b cursor-pointer"
-              >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage
-                    src={follow.follower.image || "/avatar.png"}
-                  />
-                </Avatar>
-                <div>
-                  <div className="font-semibold">
-                    {follow.follower.name}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    @{follow.follower.username}
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-4 text-muted-foreground">
-              No followers found.
+  <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Followers</DialogTitle>
+    </DialogHeader>
+    {loadingFollowers ? (
+      <ProfileSkeleton />
+    ) : followersData.length > 0 ? (
+      followersData.map((follow) => (
+        <div
+          key={follow.follower.id}
+          className="flex items-center space-x-4 py-2 border-b cursor-pointer"
+        >
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={follow.follower.image || "/avatar.png"} />
+          </Avatar>
+          <div>
+            <div className="font-semibold">{follow.follower.name}</div>
+            <div className="text-sm text-muted-foreground">
+              @{follow.follower.username}
             </div>
-          )}
-          <DialogClose asChild>
-            <Button className="mt-4 w-full" variant="outline">
-              Close
-            </Button>
-          </DialogClose>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="text-center py-4 text-muted-foreground">
+        No followers found.
+      </div>
+    )}
+    <DialogClose asChild>
+      <Button className="mt-4 w-full" variant="outline">
+        Close
+      </Button>
+    </DialogClose>
+  </DialogContent>
+</Dialog>
 
       {/* Following Dialog */}
       <Dialog open={showFollowing} onOpenChange={setShowFollowing}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Following</DialogTitle>
-          </DialogHeader>
-          {loadingFollowing ? (
-            <ProfileSkeleton />
-          ) : followingData.length > 0 ? (
-            followingData.map((follow) => (
-              <div
-                key={follow.following.id}
-                className="flex items-center space-x-4 py-2 border-b cursor-pointer"
-              >
-                <Avatar className="w-10 h-10">
-                  <AvatarImage
-                    src={follow.following.image || "/avatar.png"}
-                  />
-                </Avatar>
-                <div>
-                  <div className="font-semibold">
-                    {follow.following.name}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    @{follow.following.username}
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-4 text-muted-foreground">
-              No following users found.
+  <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Following</DialogTitle>
+    </DialogHeader>
+    {loadingFollowing ? (
+      <ProfileSkeleton />
+    ) : followingData.length > 0 ? (
+      followingData.map((follow) => (
+        <div
+          key={follow.following.id}
+          className="flex items-center space-x-4 py-2 border-b cursor-pointer"
+        >
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={follow.following.image || "/avatar.png"} />
+          </Avatar>
+          <div>
+            <div className="font-semibold">{follow.following.name}</div>
+            <div className="text-sm text-muted-foreground">
+              @{follow.following.username}
             </div>
-          )}
-          <DialogClose asChild>
-            <Button className="mt-4 w-full" variant="outline">
-              Close
-            </Button>
-          </DialogClose>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="text-center py-4 text-muted-foreground">
+        No following users found.
+      </div>
+    )}
+    <DialogClose asChild>
+      <Button className="mt-4 w-full" variant="outline">
+        Close
+      </Button>
+    </DialogClose>
+  </DialogContent>
+</Dialog>
+
     </div>
   );
 }

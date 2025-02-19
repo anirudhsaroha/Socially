@@ -107,6 +107,39 @@ export async function getRandomUsers() {
     }
 }
 
+export async function searchUser(username: string) {
+  try {
+    const userId = await getDbUserId(); 
+
+    if (!userId) return [];
+
+    const searchedUser = await prisma.user.findMany({
+      where: {
+        AND: [
+          { NOT: { id: userId } },
+          {
+            name: {
+              contains: username,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        image: true,
+      },
+    });
+
+    return searchedUser;
+  } catch (error) {
+    console.log("Error fetching random users", error);
+    return [];
+  }
+}
+
 export async function toggleFollow(targetUserId: string) {
     try {
       const userId = await getDbUserId();

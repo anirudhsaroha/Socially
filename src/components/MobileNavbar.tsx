@@ -61,6 +61,12 @@ function MobileNavbar() {
                     Notifications
                   </Link>
                 </Button>
+                <Button variant="ghost" className="flex items-center gap-3 justify-start" asChild>
+                  <Link href="/search">
+                    <SearchIcon className="w-4 h-4" />
+                    Search
+                  </Link>
+                </Button>
                 <SignOutButton>
                   <Button variant="ghost" className="flex items-center gap-3 justify-start w-full">
                     <LogOutIcon className="w-4 h-4" />
