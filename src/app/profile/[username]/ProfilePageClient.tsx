@@ -70,7 +70,6 @@ function ProfilePageClient({
     website: user.website || "",
   });
 
-  // Update type definitions to allow `name` to be string | null.
   const [followingData, setFollowingData] = useState<
     Array<{ following: { id: string; name: string | null; username: string; image: string | null } }>
   >([]);
@@ -80,7 +79,6 @@ function ProfilePageClient({
   const [loadingFollowing, setLoadingFollowing] = useState(false);
   const [loadingFollowers, setLoadingFollowers] = useState(false);
 
-  // Fetch following list when the dialog is opened
   useEffect(() => {
     if (showFollowing) {
       (async () => {
@@ -97,7 +95,6 @@ function ProfilePageClient({
     }
   }, [showFollowing, user.id]);
 
-  // Fetch followers list when the dialog is opened
   useEffect(() => {
     if (showFollowers) {
       (async () => {
@@ -166,7 +163,8 @@ function ProfilePageClient({
                 {/* PROFILE STATS */}
                 <div className="w-full mt-6">
                   <div className="flex justify-between mb-4">
-                    <div onClick={() => setShowFollowers(true)} className="hover:cursor-pointer" >
+                    {/* Corrected: Use setShowFollowing for the following block */}
+                    <div onClick={() => setShowFollowing(true)} className="hover:cursor-pointer">
                       <div className="font-semibold">
                         {user._count.following.toLocaleString()}
                       </div>
@@ -178,7 +176,7 @@ function ProfilePageClient({
                       </button>
                     </div>
                     <Separator orientation="vertical" />
-                    <div onClick={() => setShowFollowers(true)} className="hover:cursor-pointer" >
+                    <div onClick={() => setShowFollowers(true)} className="hover:cursor-pointer">
                       <div className="font-semibold">
                         {user._count.followers.toLocaleString()}
                       </div>
@@ -262,14 +260,16 @@ function ProfilePageClient({
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
             <TabsTrigger
               value="posts"
-              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
+               data-[state=active]:bg-transparent px-6 font-semibold"
             >
               <FileTextIcon className="size-4" />
               Posts
             </TabsTrigger>
             <TabsTrigger
               value="likes"
-              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 font-semibold"
+              className="flex items-center gap-2 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary
+               data-[state=active]:bg-transparent px-6 font-semibold"
             >
               <HeartIcon className="size-4" />
               Likes
@@ -279,13 +279,9 @@ function ProfilePageClient({
           <TabsContent value="posts" className="mt-6">
             <div className="space-y-6">
               {posts.length > 0 ? (
-                posts.map((post) => (
-                  <PostCard key={post.id} post={post} dbUserId={user.id} />
-                ))
+                posts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No posts yet
-                </div>
+                <div className="text-center py-8 text-muted-foreground">No posts yet</div>
               )}
             </div>
           </TabsContent>
@@ -293,13 +289,9 @@ function ProfilePageClient({
           <TabsContent value="likes" className="mt-6">
             <div className="space-y-6">
               {likedPosts.length > 0 ? (
-                likedPosts.map((post) => (
-                  <PostCard key={post.id} post={post} dbUserId={user.id} />
-                ))
+                likedPosts.map((post) => <PostCard key={post.id} post={post} dbUserId={user.id} />)
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  No liked posts to show
-                </div>
+                <div className="text-center py-8 text-muted-foreground">No liked posts to show</div>
               )}
             </div>
           </TabsContent>

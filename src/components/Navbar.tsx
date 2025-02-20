@@ -5,6 +5,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { syncUser } from "@/actions/user.action";
 import { Button } from "./ui/button";
 import { UserIcon } from "lucide-react";
+import { SignInButton } from "@clerk/nextjs";
 
 async function Navbar() {
   const user = await currentUser();
@@ -19,7 +20,7 @@ async function Navbar() {
               Socially
             </Link>
           </div>
-          <div className="flex " >
+          <div className="flex w-full items-center justify-end gap-2" >
             <DesktopNavbar />
             {
               user ? (
@@ -35,7 +36,9 @@ async function Navbar() {
                 </Button>
               </div>
               ) : (
-                <div></div>
+                <SignInButton mode="modal">
+                  <Button variant="default">Sign In</Button>
+                </SignInButton>
               )
             }
             <MobileNavbar />

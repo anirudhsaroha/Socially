@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -20,21 +20,35 @@ const SearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-  };
-
-  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // Function to fetch users based on the provided query
+  const fetchUsers = async (searchQuery: string) => {
+    // If the query is empty, clear the results.
+    if (!searchQuery) {
+      setUsers([]);
+      return;
+    }
     setLoading(true);
     try {
-      const result: User[] = await searchUser(query);
+      const result: User[] = await searchUser(searchQuery);
       setUsers(result);
     } catch (error) {
       console.error("Error searching users:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle change: trim the input value and perform a search immediately.
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const trimmedValue = e.target.value.trim();
+    setQuery(trimmedValue);
+    await fetchUsers(trimmedValue);
+  };
+
+  // Also allow search on form submission.
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await fetchUsers(query);
   };
 
   return (

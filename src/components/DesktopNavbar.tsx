@@ -46,9 +46,7 @@ export default async function DesktopNavbar() {
           <UserButton />
         </>
       ) : (
-        <SignInButton mode="modal">
-          <Button variant="default">Sign In</Button>
-        </SignInButton>
+        <div></div>
       )}
     </div>
   );
