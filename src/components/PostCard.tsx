@@ -2,7 +2,7 @@
 
 import { createComment, deletePost, getPosts, toggleLike } from "@/actions/post.action";
 import { SignInButton, useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Card, CardContent } from "./ui/card";
 import Link from "next/link";
@@ -17,7 +17,7 @@ import { deleteComment } from "@/actions/post.action";
 type Posts = Awaited<ReturnType<typeof getPosts>>;
 type Post = Posts[number];
 
-function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
+function PostCard({ post, dbUserId  }: { post: Post; dbUserId: string | null }) {
   const { user } = useUser(); 
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
@@ -26,6 +26,10 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
   const [hasLiked, setHasLiked] = useState(post.likes.some((like) =>  like.userId === dbUserId));
   const [optimisticLikes, setOptmisticLikes] = useState(post._count.likes);
   const [showComments, setShowComments] = useState(false);
+
+  useEffect( () => {
+    console.log(dbUserId);
+  }, [] );
 
   const handleLike = async () => {
     if (isLiking) return;
