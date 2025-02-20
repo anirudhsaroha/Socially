@@ -12,12 +12,13 @@ import { DeleteAlertDialog } from "./ui/DeleteAlertDialog";
 import { Button } from "./ui/button";
 import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
+import { deleteComment } from "@/actions/post.action";
 
 type Posts = Awaited<ReturnType<typeof getPosts>>;
 type Post = Posts[number];
 
 function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
-  const { user } = useUser(); // the current user  both are same sma
+  const { user } = useUser(); 
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
@@ -68,6 +69,16 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       toast.error("Failed to delete post");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId : string ) => {
+    const response = await deleteComment(commentId);
+    if (response.success) {
+      toast.success("Comment deleted");
+      // Optionally, refresh the comments list or update local state to remove the comment.
+    } else {
+      toast.error("Unable to delete comment");
     }
   };
 
@@ -166,7 +177,9 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="font-medium text-sm">{comment.author.name}</span>
+                        <span className="font-medium text-sm">
+                          {comment.author.name}
+                        </span>
                         <span className="text-sm text-muted-foreground">
                           @{comment.author.username}
                         </span>
@@ -176,6 +189,15 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                         </span>
                       </div>
                       <p className="text-sm break-words">{comment.content}</p>
+                      {/* Delete button: only show if the comment author is the current user */}
+                      {dbUserId === comment.author.id && (
+                        <button
+                          onClick={() => handleDeleteComment(comment.id)}
+                          className="text-red-500 text-xs mt-1"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

@@ -77,6 +77,19 @@ export async function getPosts() {
   }
 }
 
+export async function deleteComment(commentId: string) {
+  try {
+    const deletedComment = await prisma.comment.delete({
+      where: { id: commentId },
+    });
+    revalidatePath("/");
+    return { success: true, data: deletedComment };
+    } catch (error) {
+    console.error("Failed to delete comment", error);
+    return { success: false, error: "Failed to delete comment" };
+  }
+}
+
 export async function toggleLike(postId: string) {
   try {
     const userId = await getDbUserId();
