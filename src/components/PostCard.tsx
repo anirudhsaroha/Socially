@@ -124,7 +124,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
   } else if (likingUsers.length === 2) {
     likesDisplayText = `${likingUsers[0].name} and ${likingUsers[1].name} liked this post`;
   } else if (likingUsers.length > 2) {
-    likesDisplayText = `${likingUsers[0].name}, ${likingUsers[1].name} and others liked this post`;
+    likesDisplayText = `${likingUsers[0].name}, ${likingUsers[1].name} and ${likingUsers.length - 2 } others liked this post..`;
   }
 
   return (
