@@ -90,6 +90,21 @@ export async function deleteComment(commentId: string) {
   }
 }
 
+export async function getLikingUsers(id: string) {
+  try {
+    const likes = await prisma.like.findMany({
+      where: { postId: id },
+      include: { user: true },
+    });
+
+    return likes.map(like => like.user);
+  } catch (error) {
+    console.error("Error retrieving liking users:", error);
+    throw error;
+  }
+}
+
+
 export async function toggleLike(postId: string) {
   try {
     const userId = await getDbUserId();

@@ -1,6 +1,6 @@
 "use client";
 
-import { createComment, deletePost, getPosts, toggleLike } from "@/actions/post.action";
+import { createComment, deletePost, getPosts, toggleLike, getLikingUsers, deleteComment } from "@/actions/post.action";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -12,24 +12,55 @@ import { DeleteAlertDialog } from "./ui/DeleteAlertDialog";
 import { Button } from "./ui/button";
 import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
-import { deleteComment } from "@/actions/post.action";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import { ProfileSkeleton } from "./ProfileSkeleton";
 
 type Posts = Awaited<ReturnType<typeof getPosts>>;
 type Post = Posts[number];
 
-function PostCard({ post, dbUserId  }: { post: Post; dbUserId: string | null }) {
-  const { user } = useUser(); 
+// Define a minimal type for liking users
+type LikingUser = {
+  id: string;
+  username: string;
+  name?: string | null;
+  image?: string; // we will convert null to undefined when mapping
+};
+
+function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
+  const { user } = useUser();
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [hasLiked, setHasLiked] = useState(post.likes.some((like) =>  like.userId === dbUserId));
+  const [hasLiked, setHasLiked] = useState(post.likes.some((like) => like.userId === dbUserId));
   const [optimisticLikes, setOptmisticLikes] = useState(post._count.likes);
   const [showComments, setShowComments] = useState(false);
 
-  useEffect( () => {
-    console.log(dbUserId);
-  }, [] );
+  // State for liking users and loading indicator
+  const [likingUsers, setLikingUsers] = useState<LikingUser[]>([]);
+  const [loadingLikingUsers, setLoadingLikingUsers] = useState(false);
+
+  useEffect(() => {
+    if (post._count.likes > 0) {
+      setLoadingLikingUsers(true);
+      getLikingUsers(post.id)
+        .then((users) => {
+          // Convert image from null to undefined if needed
+          const fixedUsers: LikingUser[] = users.map((u) => ({
+            ...u,
+            image: u.image ?? undefined,
+          }));
+          // Filter out the current logged-in user if dbUserId is defined
+          const filteredUsers = dbUserId
+            ? fixedUsers.filter((user) => user.id !== dbUserId)
+            : fixedUsers;
+          setLikingUsers(filteredUsers);
+        })
+        .catch((err) => console.error("Error fetching liking users:", err))
+        .finally(() => setLoadingLikingUsers(false));
+    }
+  }, [post.id, post._count.likes, dbUserId]);
+  
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -76,15 +107,25 @@ function PostCard({ post, dbUserId  }: { post: Post; dbUserId: string | null }) 
     }
   };
 
-  const handleDeleteComment = async (commentId : string ) => {
+  const handleDeleteComment = async (commentId: string) => {
     const response = await deleteComment(commentId);
     if (response.success) {
       toast.success("Comment deleted");
-      // Optionally, refresh the comments list or update local state to remove the comment.
+      // Optionally update local state to remove the comment.
     } else {
       toast.error("Unable to delete comment");
     }
   };
+
+  // Compute display text based on the number of liking users
+  let likesDisplayText = "";
+  if (likingUsers.length === 1) {
+    likesDisplayText = `${likingUsers[0].name} liked this post`;
+  } else if (likingUsers.length === 2) {
+    likesDisplayText = `${likingUsers[0].name} and ${likingUsers[1].name} liked this post`;
+  } else if (likingUsers.length > 2) {
+    likesDisplayText = `${likingUsers[0].name}, ${likingUsers[1].name} and others liked this post`;
+  }
 
   return (
     <Card className="overflow-hidden">
@@ -108,7 +149,9 @@ function PostCard({ post, dbUserId  }: { post: Post; dbUserId: string | null }) 
                     {post.author.name}
                   </Link>
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Link href={`/profile/${post.author.username}`}>@{post.author.username}</Link>
+                    <Link href={`/profile/${post.author.username}`}>
+                      @{post.author.username}
+                    </Link>
                     <span>•</span>
                     <span>{formatDistanceToNow(new Date(post.createdAt))} ago</span>
                   </div>
@@ -127,6 +170,48 @@ function PostCard({ post, dbUserId  }: { post: Post; dbUserId: string | null }) 
             <div className="rounded-lg overflow-hidden">
               <img src={post.image} alt="Post content" className="w-full h-auto object-cover" />
             </div>
+          )}
+
+          {/* Who liked the post */}
+          {post._count.likes > 0 && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-xs text-gray-400">
+                  {likesDisplayText}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Liked By</DialogTitle>
+                  <DialogDescription>
+                    {loadingLikingUsers ? (
+                      <ProfileSkeleton />
+                    ) : (
+                      likingUsers.map((user) => (
+                        <Link
+                          key={user.id}
+                          href={`/profile/${user.username}`}
+                          className="flex items-center mb-2 p-4 border rounded-lg bg-card hover:bg-muted transition-colors hover:shadow-md"
+                        >
+                          <Avatar className="w-10 h-10 flex-shrink-0">
+                            <AvatarImage src={user.image ?? "/avatar.png"} />
+                          </Avatar>
+                          <div className="ml-4">
+                            <div className="font-semibold text-lg">
+                              {user.name || user.username}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              @{user.username}
+                            </div>
+                          </div>
+                        </Link>
+
+                      ))
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
           )}
 
           {/* LIKE & COMMENT BUTTONS */}
@@ -181,9 +266,7 @@ function PostCard({ post, dbUserId  }: { post: Post; dbUserId: string | null }) 
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="font-medium text-sm">
-                          {comment.author.name}
-                        </span>
+                        <span className="font-medium text-sm">{comment.author.name}</span>
                         <span className="text-sm text-muted-foreground">
                           @{comment.author.username}
                         </span>
@@ -255,4 +338,5 @@ function PostCard({ post, dbUserId  }: { post: Post; dbUserId: string | null }) 
     </Card>
   );
 }
+
 export default PostCard;

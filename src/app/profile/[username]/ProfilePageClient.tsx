@@ -374,8 +374,9 @@ export default function ProfilePageClient({
                 <Link
                   key={follow.following.id}
                   href={`/profile/${follow.following.username}`}
+                  className="flex items-center mb-2 p-4 border rounded-lg bg-card hover:bg-muted transition-colors hover:shadow-md"
                 >
-                  <div className="flex items-center space-x-4 py-2 border-b cursor-pointer">
+                  <div className="flex items-center space-x-4 cursor-pointer">
                     <Avatar className="w-10 h-10">
                       <AvatarImage
                         src={follow.following.image ?? "/avatar.png"}
@@ -418,8 +419,9 @@ export default function ProfilePageClient({
                 <Link
                   key={follow.follower.id}
                   href={`/profile/${follow.follower.username}`}
+                  className="flex items-center mb-2 p-4 border rounded-lg bg-card hover:bg-muted transition-colors hover:shadow-md"
                 >
-                  <div className="flex items-center space-x-4 py-2 border-b cursor-pointer">
+                  <div className="flex items-center space-x-4 cursor-pointer">
                     <Avatar className="w-10 h-10">
                       <AvatarImage
                         src={follow.follower.image ?? "/avatar.png"}
