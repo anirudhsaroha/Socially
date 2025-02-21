@@ -21,7 +21,7 @@ async function Navbar() {
             </Link>
           </div>
           <div className="flex w-full items-center justify-end gap-2" >
-            <DesktopNavbar />
+            <DesktopNavbar username={user?.username} email={user?.emailAddresses[0]?.emailAddress} />
             {
               user ? (
                 <div className="md:hidden" >
