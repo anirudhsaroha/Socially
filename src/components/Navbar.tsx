@@ -10,7 +10,7 @@ import { SignInButton } from "@clerk/nextjs";
 async function Navbar() {
   const user = await currentUser();
   if (user) await syncUser();  // get the user and sync it with databasee 
- 
+
   return (
     <nav className="sticky top-0 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -21,7 +21,7 @@ async function Navbar() {
             </Link>
           </div>
           <div className="flex w-full items-center justify-end gap-2" >
-            <DesktopNavbar username={user?.username} email={user?.emailAddresses[0]?.emailAddress} />
+            <DesktopNavbar email={user?.emailAddresses[0]?.emailAddress} />
             {
               user ? (
                 <div className="md:hidden" >

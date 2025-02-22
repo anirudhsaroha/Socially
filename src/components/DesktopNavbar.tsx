@@ -3,11 +3,11 @@
 import { BellIcon, HomeIcon, UserIcon , SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import ModeToggle from "./ModeToggle";
 
 
-export default function DesktopNavbar({username , email}: { username: string | null | undefined , email : string | undefined }) {
+export default function DesktopNavbar({ email}: { email : string | undefined }) {
 
   return (
     <div className="hidden md:flex items-center space-x-4">
@@ -20,7 +20,7 @@ export default function DesktopNavbar({username , email}: { username: string | n
         </Link>
       </Button>
 
-      {username ? (
+      {email ? (
         <>
           <Button variant="ghost" className="flex items-center gap-2" asChild>
             <Link href="/notifications">
@@ -37,7 +37,7 @@ export default function DesktopNavbar({username , email}: { username: string | n
           <Button variant="ghost" className="flex items-center gap-2" asChild>
             <Link
               href={`/profile/${
-                username ?? email?.split("@")[0]
+               email?.split("@")[0]
               }`}
             >
               <UserIcon className="w-4 h-4" />
